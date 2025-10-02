@@ -1,3 +1,7 @@
+// GamePlaceholder.jsx
+// Placeholder for the Plinko game feature.
+// Shows where the game board and loop will be added later.
+
 export default function GamePlaceholder() {
   return (
     <div>

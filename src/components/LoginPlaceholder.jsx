@@ -1,4 +1,6 @@
-
+// LoginPlaceholder.jsx
+// Placeholder for the Authentication feature.
+// Shows where the login/register UI will eventually go.
 
 export default function LoginPlaceholder() {
   return (
