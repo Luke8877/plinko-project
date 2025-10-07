@@ -51,6 +51,7 @@ See `docs/backlog.md` for details.
 - CRUD mock data setup 
 
 **Remaining:**  
+- Finish project design and planning documents
 - Implement full authentication logic (forms, hashing, DB validation)  
 - Build Plinko game loop with randomization and outcomes  
 - Integrate game loop with database for balance tracking  

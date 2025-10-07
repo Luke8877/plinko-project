@@ -10,6 +10,8 @@
   
 
 ## Remaining
+- Complete full project design document (wireframes, finalized ER diagram, finalize core MVP)
+-Comlete full project plan document (Components to be implemented, git organized with branches, timeline defined)
 - Authentication logic (form inputs, password hashing, DB validation)  
 - Plinko game loop implementation  
 - Database integration for balance tracking  
