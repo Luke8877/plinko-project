@@ -1,38 +1,50 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+/**
+ * Authentication Controller
+ * -------------------------
+ * Handles user registration and login requests.
+ * Delegates business logic to AuthService methods.
+ */
 
-exports.register = async (req, res) => {
+import { registerUserService, loginUserService } from '../services/index.js';
+
+/**
+ * @route   POST /api/auth/register
+ * @desc    Register a new user
+ * @access  Public
+ */
+export const registerUser = async (req, res) => {
   try {
+    // Extract credentials from the request body
     const { username, password } = req.body;
 
-    const existingUser = await User.findOne({ username });
-    if (existingUser)
-      return res.status(400).json({ msg: 'Username already exists' });
+    // Call the AuthService to handle registration logic
+    const user = await registerUserService(username, password);
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ username, passwordHash });
-
+    // Send success response with created user info
     res.status(201).json({ msg: 'User registered successfully', user });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    // Send user-friendly error message
+    res.status(400).json({ msg: err.message });
   }
 };
 
-exports.login = async (req, res) => {
+/**
+ * @route   POST /api/auth/login
+ * @desc    Authenticate user and return JWT token
+ * @access  Public
+ */
+export const loginUser = async (req, res) => {
   try {
+    // Extract credentials from the request body
     const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
 
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) return res.status(400).json({ msg: 'Invalid credentials' });
+    // Delegate login logic to AuthService
+    const { user, token } = await loginUserService(username, password);
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
-    });
+    // Respond with token and user info
     res.json({ msg: 'Login successful', token, user });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    // Invalid credentials or server error
+    res.status(400).json({ msg: err.message });
   }
 };
