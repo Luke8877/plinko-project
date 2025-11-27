@@ -1,33 +1,39 @@
-import LoginPlaceholder from './components/LoginPlaceholder';
-import GamePlaceholder from './components/GamePlaceholder';
-import { useState } from "react";
-import { mockUsers } from './mockData';
+/**
+ * App Router
+ * --------------------------------------------------
+ * Defines the main client-side routes for the application.
+ *
+ * /login     - Public access screen for authentication
+ * /dashboard - Protected screen (requires valid login)
+ *
+ * Root path (/) auto-redirects users to the login page.
+ * Protected route enforcement will be added during the
+ * dashboard integration milestone.
+ */
+
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
 
 function App() {
-  // Start with mock data (pretend database)
-  const [users, setUsers] = useState(mockUsers);
-
-  // Temporary button for CRUD demo – adds a new user with a balance
-  const addUser = () => {
-    setUsers([...users, { id: users.length + 1, username: `newUser${users.length + 1}`, balance: 50 }]);
-  };
-
   return (
-    <>
-      <h1>Plinko Project</h1>
+    <Router>
+      <Routes>
+        {/* Default route -> login screen */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-      <button onClick={addUser}>Add User</button>
-      <ul>
-        {users.map(u => (
-          <li key={u.id}>
-            {u.username} – Balance: {u.balance}
-          </li>
-        ))}
-      </ul>
+        {/* Public Auth Route */}
+        <Route path="/login" element={<LoginPage />} />
 
-      <LoginPlaceholder />
-      <GamePlaceholder />
-    </>
+        {/* Authenticated Landing Page */}
+        <Route path="/dashboard" element={<DashboardPage />} />
+      </Routes>
+    </Router>
   );
 }
 
