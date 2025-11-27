@@ -1,14 +1,16 @@
 /**
  * App Router
  * --------------------------------------------------
- * Defines the main client-side routes for the application.
+ * Defines all major views and access levels for the app.
  *
- * /login     - Public access screen for authentication
- * /dashboard - Protected screen (requires valid login)
+ * Public Route:
+ *   /login      - Authentication screen (login/register)
  *
- * Root path (/) auto-redirects users to the login page.
- * Protected route enforcement will be added during the
- * dashboard integration milestone.
+ * Protected Routes (require JWT token):
+ *   /dashboard  - User balance, leaderboard preview, game entry (MVP)
+ *
+ * Default:
+ *   Root path (/) redirects to login unless authenticated
  */
 
 import {
@@ -17,21 +19,30 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
+
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import LoginPage from './pages/LoginPage.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Default route -> login screen */}
-        <Route path="/" element={<Navigate to="/login" />} />
-
-        {/* Public Auth Route */}
+        {/* Public authentication route */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Authenticated Landing Page */}
-        <Route path="/dashboard" element={<DashboardPage />} />
+        {/* Protected authenticated dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default redirect */}
+        <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );
