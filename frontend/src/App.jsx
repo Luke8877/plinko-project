@@ -23,6 +23,8 @@ import {
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import GamePage from './pages/GamePage.jsx';
+import StatsPage from './pages/StatsPage.jsx'; // will create placeholder next
 
 function App() {
   return (
@@ -37,6 +39,26 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Game page */}
+        <Route
+          path="/game"
+          element={
+            <ProtectedRoute>
+              <GamePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Stats page */}
+        <Route
+          path="/stats"
+          element={
+            <ProtectedRoute>
+              <StatsPage />
             </ProtectedRoute>
           }
         />

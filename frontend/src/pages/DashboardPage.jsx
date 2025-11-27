@@ -1,9 +1,15 @@
 /**
  * Dashboard Page
  * --------------------------------------------------
- * Displays the user's current balance and quick stats
- * after authentication. Acts as the main navigation hub
- * for accessing game and detailed stats pages.
+ * Main authenticated landing screen.
+ *
+ * Shows:
+ *  - User balance
+ *  - Quick performance stats
+ *  - Navigation to gameplay + detailed stats
+ *
+ * Data is loaded on mount from the backend via the
+ * report endpoint, ensuring stats remain up-to-date.
  */
 
 import { useEffect, useState } from 'react';
@@ -14,7 +20,11 @@ export default function DashboardPage() {
   const [report, setReport] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch user stats on load
+  /**
+   * Fetch the user's performance stats as soon as they load
+   * into the dashboard. If the request fails, the dashboard
+   * remains visible but without populated metrics.
+   */
   useEffect(() => {
     async function fetchData() {
       try {
@@ -27,6 +37,10 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  /**
+   * Clears JWT → returns user to login screen.
+   * Required for fully testing the authentication lifecycle.
+   */
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -69,7 +83,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Main Actions */}
+      {/* Navigation */}
       <button
         onClick={() => navigate('/game')}
         className="bg-brandPink text-black px-6 py-3 rounded-full font-semibold hover:scale-[1.03] transition-transform mb-3"
