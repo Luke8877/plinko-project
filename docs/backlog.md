@@ -1,5 +1,9 @@
 # Backlog – Plinko Project
 
+### _(Updated for Milestone 3 Progress)_
+
+---
+
 ## ✅ Completed
 
 - Project proposal
@@ -7,63 +11,94 @@
 - React + Vite environment initialized
 - Authentication placeholder component (frontend)
 - CRUD mock data setup
-- GamePlaceholder component for Plinko game loop
-- **Full Project Design Document completed** (wireframes, ER diagram, core MVP defined)
-- **Full Project Plan Document completed** (component breakdown, branching strategy, and timeline)
-- Backend folder structure implemented (controllers, models, routes, middleware, services, utils)
+- `GamePlaceholder` component for Plinko game loop
+- Full Project Design Document completed  
+  _(wireframes, ER diagram, core MVP defined)_
+- Full Project Plan Document completed  
+  _(branching strategy & timeline)_
+
+### Backend Development
+
+- Backend folder structure implemented  
+  _(controllers, models, routes, middleware, services, utils)_
 - MongoDB Atlas cluster created and successfully connected
 - Express server configured with dotenv, CORS, and Mongoose
-- User model created (`User.js`) with default balance and unique username constraint
-- Authentication routes implemented (`/api/auth/register`, `/api/auth/login`)
-- Auth controller added with bcrypt password hashing and JWT issuance
+- `User` model created (`User.js`)
+  - Initial balance + unique username constraint
+- Authentication routes implemented:
+  - `/api/auth/register`
+  - `/api/auth/login`
+- Auth controller added with:
+  - bcrypt password hashing
+  - JWT issuance
 - JWT middleware implemented for protected routes
-- Game logic route added (`/api/game/play`) with random multiplier, bet validation, and balance updates
-- Round model and saving logic implemented (`PlinkoRound.js`)
+- Game logic route added (`/api/game/play`)
+  - random multiplier + bet validation
+  - balance updates included
+- Round model and persistence implemented (`PlinkoRound.js`)
 - Report system integrated (`/api/report`)
-  - Generates and persists reports
-  - Fetches historical performance data
+  - Generates and retrieves recent gameplay performance data
 - Leaderboard feature added (`/api/leaderboard`)
-  - Returns top users sorted by balance
-- Postman testing completed for:
-  - Register
-  - Login
-  - Protected route
-  - Game round play
-  - Report fetch
-  - Report history
-  - Leaderboard fetch
-- MongoDB verified to store all data correctly (users, plinkorounds, reports)
-- All backend endpoints tested and functioning as intended
+- Backend routes fully verified with Postman
+- MongoDB storage confirmed for all data types
+
+### ✔ Milestone 3 Frontend Progress
+
+- Tailwind CSS configured with custom dark theme + brand accents
+- Login / register pages fully functional with backend integration
+- JWT token persisted to localStorage and auto-attached via Axios interceptors
+- `ProtectedRoute` guards applied to Dashboard, Game, and Stats pages
+- Dashboard MVP implemented:
+  - Displays live balance + basic stats placeholders
+  - Logout functionality
+  - Navigation to Game screen
+- Game route UI:
+  - Bet entry form
+  - Calls `/game/play` and displays multiplier + updated balance
+  - Feedback for win/loss result
 
 ---
 
-## Remaining (Next Phase: Frontend Integration)
+## Remaining (Next Development Steps)
 
-### Frontend Authentication UI
+### Plinko Gameplay UX
 
-- Connect login/register forms to backend API
-- Store and use JWT token in `localStorage`
-- Redirect to dashboard upon successful login
+- Full animated Plinko board (peg grid + ball physics)
+- Smooth real-time balance updates during session
+- Enhanced win feedback and celebration animations
 
-### Plinko Game Implementation
+### Statistics Page
 
-- Frontend game loop with ball-drop animation
-- Apply random multipliers based on backend results
-- Display updated user balance dynamically
+Pull from `/api/report/history` to display:
 
-### Dashboard / Statistics Page
+- Report history line/bar graph
+- Biggest win
+- Win/loss ratio
+- Average bet
+- Overall lifetime stats tracking
 
-- Show current balance, recent rounds, and report metrics
-- Display a line graph of win/loss trend using `/api/report/history` data
-- Include a quick “fun facts” summary (biggest win, total games, average bet)
+### Leaderboard (Frontend)
 
-### Leaderboard Page
+- Fetch and display rankings from `/api/leaderboard`
+- Update automatically after a completed game round
 
-- Display top users by balance
-- Auto-refresh after each game or at intervals
+### UI Polish
 
-### UI Polish and Final Testing
+- Full PlinkOink mascot branding integration
+  - Pig mascot ball asset
+  - Neon glow accents
+- Smooth transitions + satisfying animations
+- Mobile-first responsive refinements
 
-- Styling consistency with PlinkOink theme
-- Responsive design for all core views (login, dashboard, game, leaderboard)
-- End-to-end testing across all routes and features
+### Final Testing & Submission Prep
+
+- End-to-end validation of:
+  - Authentication
+  - Gameplay
+  - Stats + reporting
+- Minor bug cleanup + QoL improvements
+- Update milestone documentation with new screenshots
+
+---
+
+This backlog reflects a completed authentication-to-gameplay pipeline, with primary focus shifting to the full Plinko experience, visual polish, and analytics integrations.
