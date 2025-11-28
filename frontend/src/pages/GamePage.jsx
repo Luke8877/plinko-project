@@ -11,13 +11,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService.js';
+import GameBoard from '../components/GameBoard.jsx';
 
 export default function GamePage() {
   const [bet, setBet] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  // TODO: real Plinko ball + physics implementation
   const handlePlay = async () => {
     setMessage('');
 
@@ -60,12 +60,11 @@ export default function GamePage() {
 
       {message && <p className="text-brandPink mb-6">{message}</p>}
 
-      {/* Placeholder for Plinko board */}
-      <div className="bg-cardDark w-full max-w-md h-96 rounded-xl border border-brandPink/30 flex items-center justify-center">
-        <p className="opacity-60">Plinko Board Coming Soon…</p>
+      {/* Plinko Board */}
+      <div className="bg-cardDark w-full max-w-md h-[560px] rounded-xl border border-brandPink/30 p-4">
+        <GameBoard />
       </div>
 
-      {/* Back button */}
       <button
         onClick={() => navigate('/dashboard')}
         className="underline text-brandPink text-sm mt-8"
