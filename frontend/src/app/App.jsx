@@ -20,11 +20,11 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import ProtectedRoute from './components/ProtectedRoute.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import GamePage from './pages/GamePage.jsx';
-import StatsPage from './pages/StatsPage.jsx'; // will create placeholder next
+import LoginPage from '@auth/pages/LoginPage.jsx';
+import DashboardPage from '@dashboard/pages/DashboardPage.jsx';
+import GamePage from '@game/pages/GamePage.jsx';
+import StatsPage from '@stats/pages/StatsPage.jsx';
+import ProtectedRoute from '@shared/components/ProtectedRoute.jsx';
 
 function App() {
   return (
