@@ -5,7 +5,7 @@
  * Renders the branded login card and authentication form.
  */
 
-import AuthForm from '../components/AuthForm';
+import AuthForm from '@auth/components/AuthForm';
 
 /**
  * Page wrapper for login/register UI
