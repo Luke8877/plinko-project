@@ -49,7 +49,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-surfaceDark text-slate-100 p-10 flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-6 text-brandPink">
-        Welcome to PlinkOink 🐷
+        Welcome to PlinkOink 
       </h1>
 
       {/* Balance Card */}
@@ -88,7 +88,7 @@ export default function DashboardPage() {
         onClick={() => navigate('/game')}
         className="bg-brandPink text-black px-6 py-3 rounded-full font-semibold hover:scale-[1.03] transition-transform mb-3"
       >
-        Play PlinkOink 🎮
+        Play PlinkOink 
       </button>
 
       <button
