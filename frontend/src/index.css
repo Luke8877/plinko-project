@@ -18,3 +18,24 @@
 body {
   @apply bg-surfaceDark text-slate-200;
 }
+
+.popup {
+  position: absolute;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.fade {
+  animation: fadeUp 0.9s forwards;
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -140%);
+  }
+}
