@@ -2,47 +2,92 @@
  * Game Controller
  * -------------------------
  * Handles Plinko game logic, including bet validation,
- * random outcome generation, and balance updates.
- * Relies on service-layer helpers for randomness and database operations.
+ * random outcome generation, and backend balance updates.
+ * Also provides endpoints for reading + updating user balance.
  */
 
 import { getRandomSlot, saveGame, updateBalance } from '../services/index.js';
 import { User } from '../models/index.js';
 
 /**
+ * @route   GET /api/game/balance
+ * @desc    Fetch current balance for logged-in user
+ * @access  Private
+ */
+export const getBalance = async (req, res) => {
+  try {
+    const user = await User.findById(req.user).select('balance');
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    return res.json({ balance: user.balance });
+  } catch (err) {
+    console.error('getBalance error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+/**
+ * @route   PUT /api/game/balance
+ * @desc    Overwrites user balance (used by frontend sync)
+ * @access  Private
+ */
+export const updateBalanceController = async (req, res) => {
+  try {
+    const { balance } = req.body;
+
+    if (balance == null || balance < 0) {
+      return res.status(400).json({ msg: 'Invalid balance value' });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.user,
+      { balance },
+      { new: true }
+    ).select('balance');
+
+    if (!updated) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    return res.json({ balance: updated.balance });
+  } catch (err) {
+    console.error('updateBalance error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+/**
  * @route   POST /api/game/play
- * @desc    Executes a single Plinko round for the logged-in user.
- *          Deducts bet, calculates payout, updates balance,
- *          and saves the round to the database.
- * @access  Private (requires valid JWT)
+ * @desc    Plays a single Plinko round using backend RNG
+ * @access  Private
  */
 export const playRound = async (req, res) => {
   try {
     const userId = req.user;
-
-    // Extract bet amount
     const { bet } = req.body;
 
-    // Validate user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
-    // Ensure the bet is positive and does not exceed user balance
-    if (bet <= 0 || bet > user.balance)
+    if (bet <= 0 || bet > user.balance) {
       return res.status(400).json({ msg: 'Invalid bet amount' });
+    }
 
-    // Deduct bet from current balance
+    // Deduct bet
     const currentBalance = user.balance - bet;
 
-    // Generate random multiplier using the RandomService
-    const slots = [0.5, 1, 2, 5]; // Example payout multipliers
+    // RNG multiplier (use the real one later for Plinko paths)
+    const slots = [0.5, 1, 2, 5];
     const multiplier = getRandomSlot(slots);
 
-    // Calculate payout and resulting balance
+    // Calculate payout
     const payout = Math.round(bet * multiplier);
     const newBalance = currentBalance + payout;
 
-    // Update user balance and save round details
+    // Persist changes
     await updateBalance(userId, newBalance);
     await saveGame(userId, bet, payout, multiplier);
 
@@ -53,7 +98,7 @@ export const playRound = async (req, res) => {
       newBalance,
     });
   } catch (err) {
-    console.error(err);
+    console.error('playRound error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };

@@ -120,7 +120,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
   }, [mode, slots.length]);
 
   /**
-   * 🧠 MOST IMPORTANT FIX:
+   *  MOST IMPORTANT FIX:
    * Subscribe to scoring events using latest callback.
    * Prevents stale closure problem with bets always = 100.
    */
@@ -157,7 +157,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
             Matter.World.remove(world, pigBody);
             delete pigBodiesRef.current[id];
 
-            // 🔥 send scoring result to GamePage economy
+            //  send scoring result to GamePage economy
             onBallLanded?.(slotIndex, multiplier);
 
             // Update visible balls
@@ -179,7 +179,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
 
     // Cleanup old listener before replacing with fresh one
     return () => Events.off(engine, 'collisionStart', handleCollision);
-  }, [onBallLanded]); // <-- 🔒 Always sync latest callback
+  }, [onBallLanded]); // <--  Always sync latest callback
 
   /**
    * API to spawn pigs (used by GamePage)
