@@ -90,11 +90,11 @@ const [isAutoRunning, setIsAutoRunning] = useState(false);
     // Net result vs. stake (for popup display only)
     const net = payout - perPig;
 
-    // 💰 Update balance: we already removed totalBet up front,
+    // Update balance: we already removed totalBet up front,
     // so here we return the full payout for this pig.
     setBalance((prev) => Number((prev + payout).toFixed(2)));
 
-    // 🎇 Drive popup animation in GameBoard via lastImpact
+    // Drive popup animation in GameBoard via lastImpact
     setLastImpact({
       slotIndex,
       multiplier,

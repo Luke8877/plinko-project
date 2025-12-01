@@ -7,7 +7,7 @@ import React, {
   forwardRef,
 } from 'react';
 import usePlinkoEngine from '../hooks/usePlinkoEngine';
-import PigMascot from './PigMascot';
+import PigMascot from '../../../shared/components/PigMascot';
 
 /**
  * Visual layer for PlinkOink gameplay.
