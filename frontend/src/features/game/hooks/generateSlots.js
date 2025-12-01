@@ -34,17 +34,11 @@ export function generateSlots(width, height, topPegCount, rows) {
   for (let i = 0; i < slotCount; i++) {
     const x = (i + 0.5) * slotWidth;
 
-    const slot = Bodies.rectangle(
-      x,
-      floorY,
-      slotWidth * 0.9, // slight gap between slots prevents overlapping sensors
-      6, // thinner bar gives cleaner impact visuals
-      {
-        isStatic: true,
-        isSensor: true, // detects pigs without affecting physics
-        label: `slot-${i}`,
-      }
-    );
+    const slot = Bodies.rectangle(x, floorY, slotWidth * 0.9, 6, {
+      isStatic: true,
+      isSensor: true, // detects pigs without affecting physics
+      label: `slot-${i}`,
+    });
 
     slotBodies.push(slot);
   }

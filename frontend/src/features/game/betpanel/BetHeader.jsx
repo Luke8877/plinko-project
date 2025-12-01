@@ -14,7 +14,7 @@ export default function BetHeader({ balance, maxProfit }) {
       <span>
         Max Win:{' '}
         <span className="text-amber-300 font-semibold">
-          {maxProfit.toFixed(2)}
+          ${Number(maxProfit ?? 0).toFixed(2)}
         </span>
       </span>
     </div>
