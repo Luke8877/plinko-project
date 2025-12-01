@@ -12,7 +12,6 @@ import PigMascot from '@shared/components/PigMascot.jsx';
 
 /**
  * Page wrapper for login/register UI
- * (keeps layout styling separate from form logic)
  */
 export default function LoginPage() {
   return (

@@ -1,7 +1,7 @@
 /**
  * FloatingPig Component
  * -------------------------------------------------------
- * A playful animated pig mascot that follows the user's
+ * An animated pig mascot that follows the user's
  * cursor on screen. Designed to reinforce brand identity
  * and add personality to the login experience.
  *
@@ -34,10 +34,9 @@ export default function FloatingPig() {
   /**
    * Spin logic:
    * The farther away the cursor is from the pig,
-   * the faster it rotates — adds playful character.
+   * the faster it rotates.
    *
-   * Once it reaches the cursor, rotation stops instantly
-   * without snapping upright. It simply “holds its pose.”
+   * Once it reaches the cursor, rotation stops.
    */
   useEffect(() => {
     let currentRot = 0;
@@ -63,7 +62,7 @@ export default function FloatingPig() {
 
   /**
    * Track cursor position every frame.
-   * Updates MotionValues directly (no React state).
+   * Updates MotionValues directly.
    */
   useEffect(() => {
     const handleMove = (e) => {
