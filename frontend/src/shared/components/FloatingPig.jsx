@@ -1,60 +1,91 @@
 /**
- * FloatingPig
- * --------------------------------------------------
- * A playful UI element that follows the user's cursor.
- * Used on the login screen to reinforce the PlinkOink brand
- * with a bit of character and motion.
+ * FloatingPig Component
+ * -------------------------------------------------------
+ * A playful animated pig mascot that follows the user's
+ * cursor on screen. Designed to reinforce brand identity
+ * and add personality to the login experience.
  *
- * Notes:
- * - Motion is handled by Framer Motion for smooth spring physics
- * - Pointer events are disabled so the pig never interferes with clicks
+ * Performance Notes:
+ * - Uses framer-motion MotionValues to avoid unnecessary React re-renders
+ * - Uses spring physics for smooth natural movement
+ * - Rotation behavior reacts to cursor velocity and distance
+ * - Pointer events disabled to ensure UI interactions remain unaffected
  */
 
-import { useEffect, useState } from "react";
-import { motion as _motion } from "framer-motion";
-import PigMascot from "./PigMascot.jsx";
+import { useEffect } from 'react';
+import { motion as Motion, useMotionValue, useSpring } from 'framer-motion';
+import PigMascot from './PigMascot.jsx';
 
 export default function FloatingPig() {
   const size = 90;
-  const [pos, setPos] = useState({ x: 100, y: 100 });
+  const offset = size * 0.4; // Keeps pig slightly offset from cursor
+
+  // MotionValues updated every frame | no React re-render needed
+  const xMV = useMotionValue(100);
+  const yMV = useMotionValue(100);
+
+  // Spring smoothing → more natural movement and inertia
+  const x = useSpring(xMV, { stiffness: 50, damping: 16, mass: 0.45 });
+  const y = useSpring(yMV, { stiffness: 50, damping: 16, mass: 0.45 });
+
+  // Rotation MotionValue (continues spinning while chasing)
+  const rotMV = useMotionValue(0);
 
   /**
-   * Tracks cursor position and offsets mascot slightly
-   * so it doesn’t sit directly on the pointer.
+   * Spin logic:
+   * The farther away the cursor is from the pig,
+   * the faster it rotates — adds playful character.
+   *
+   * Once it reaches the cursor, rotation stops instantly
+   * without snapping upright. It simply “holds its pose.”
+   */
+  useEffect(() => {
+    let currentRot = 0;
+
+    const update = () => {
+      const dx = xMV.get() - x.get();
+      const dy = yMV.get() - y.get();
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      const stopThreshold = 12;
+
+      if (distance > stopThreshold) {
+        const spinSpeed = Math.min(distance * 0.02, 8); // Cap for stability
+        currentRot += spinSpeed;
+        rotMV.set(currentRot);
+      }
+
+      requestAnimationFrame(update);
+    };
+
+    update();
+  }, [x, y, xMV, yMV, rotMV]);
+
+  /**
+   * Track cursor position every frame.
+   * Updates MotionValues directly (no React state).
    */
   useEffect(() => {
     const handleMove = (e) => {
-      const offset = size * 0.4;
-      setPos({
-        x: e.clientX - offset,
-        y: e.clientY - offset,
-      });
+      xMV.set(e.clientX - offset);
+      yMV.set(e.clientY - offset);
     };
 
-    window.addEventListener("mousemove", handleMove);
-
-    // Cleanup to avoid stale listeners on unmount
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, [size]);
+    window.addEventListener('mousemove', handleMove);
+    return () => window.removeEventListener('mousemove', handleMove);
+  }, [offset, xMV, yMV]);
 
   return (
-    <_motion.div
+    <Motion.div
       className="pointer-events-none fixed top-0 left-0"
-      animate={{
-        x: pos.x,
-        y: pos.y,
-        rotate: pos.x * 0.8, // small tilt for personality
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 55,
-        damping: 12,
+      style={{
+        x,
+        y,
+        rotate: rotMV,
+        willChange: 'transform', // Hint for GPU acceleration
       }}
     >
-      <PigMascot
-        size={size}
-        className="drop-shadow-[0_0_20px_#ff2fb4] opacity-95"
-      />
-    </_motion.div>
+      <PigMascot size={size} className="opacity-95" />
+    </Motion.div>
   );
 }

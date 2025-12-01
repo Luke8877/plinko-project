@@ -10,7 +10,10 @@ module.exports = {
         cardDark: '#18141f',
       },
       boxShadow: {
-        glow: '0 0 20px #ff4d8d55',
+        pig: '0 8px 20px rgba(0,0,0,0.35)', // soft depth shadow
+      },
+      dropShadow: {
+        pigGlow: '0 0 14px rgba(255,47,180,0.55)', // shape-following neon glow
       },
     },
   },

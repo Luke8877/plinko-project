@@ -61,3 +61,8 @@
     transform: translate(-50%, -140%);
   }
 }
+
+.flying-pig-shadow {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  will-change: transform;
+}
