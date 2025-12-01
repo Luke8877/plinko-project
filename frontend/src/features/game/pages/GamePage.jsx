@@ -13,6 +13,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameBoard from '../components/GameBoard';
 import BetPanel from '../betpanel/BetPanel';
+import { fetchBalance, updateBalance } from '@services/balanceService';
+
 
 export default function GamePage() {
   const navigate = useNavigate();
@@ -26,19 +28,40 @@ export default function GamePage() {
   // Last pig landing info (drives popup animation in GameBoard)
   const [lastImpact, setLastImpact] = useState(null);
 
-  // Player account balance
-  const [balance, setBalance] = useState(1000);
+  // Player account balance (synced with backend)
+  const [balance, setBalance] = useState(0);
+  const balanceRef = useRef(0);
 
-  // Auto runs waves repeatedly until user stops OR balance too low
-  const [isAutoRunning, setIsAutoRunning] = useState(false);
-
-  /**
-   * Stores the freshest balance value so auto mode does not use stale closures.
-   */
-  const balanceRef = useRef(balance);
+  // Fetch balance once on mount 
   useEffect(() => {
-    balanceRef.current = balance;
-  }, [balance]);
+    fetchBalance()
+      .then(res => {
+        setBalance(res.data.balance);
+        balanceRef.current = res.data.balance;
+      })
+      .catch(err => {
+        console.error("Failed to fetch backend balance:", err);
+        setBalance(1000);
+        balanceRef.current = 1000;
+      });
+  }, []);
+
+  // Keep ref in sync
+useEffect(() => {
+  balanceRef.current = balance;
+}, [balance]);
+
+// Sync updated balance back to backend (skip first load)
+useEffect(() => {
+  if (balance === 0) return; // prevents overwriting real DB balance on first mount
+  updateBalance(balance)
+    .catch(err => console.error("Balance sync failed:", err));
+}, [balance]);
+
+// Auto runs waves repeatedly…
+const [isAutoRunning, setIsAutoRunning] = useState(false);
+
+
 
   /**
    * Called when physics engine reports a pig has landed in a scoring slot.

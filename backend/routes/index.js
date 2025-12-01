@@ -1,12 +1,17 @@
 /**
  * Routes Barrel File
  * -------------------------
- * Bundles and re-exports all route definitions.
+ * Bundles and re-exports individual route modules for mounting in server.js
  */
 
-import authRoutes from './authRoutes.js'; // Authentication routes (/api/auth)
-import gameRoutes from './gameRoutes.js'; // Game routes (/api/game)
-import reportRoutes from './reportRoutes.js'; // Report routes (/api/report)
-import leaderboardRoutes from './leaderboardRoutes.js'; // Leaderboard routes (/api/leaderboard)
+import authRoutes from './authRoutes.js';
+import gameRoutes from './gameRoutes.js';
+import reportRoutes from './reportRoutes.js';
+import leaderboardRoutes from './leaderboardRoutes.js';
 
-export { authRoutes, gameRoutes, reportRoutes, leaderboardRoutes };
+export {
+  authRoutes,
+  gameRoutes,
+  reportRoutes,
+  leaderboardRoutes
+};
