@@ -1,37 +1,31 @@
 /**
  * Report Controller
- * -------------------------
- * Handles report generation and retrieval for Plinko users.
+ * Returns user balance + placeholder stats
  */
 
-import { fetchReport, getReportHistory } from '../services/index.js';
+import User from '../models/User.js';
 
-/**
- * @route   GET /api/report
- * @desc    Retrieve latest gameplay report for the authenticated user.
- */
 export const getUserReport = async (req, res) => {
   try {
-    const userId = req.user;
-    const report = await fetchReport(userId);
-    res.json(report);
+    const user = await User.findById(req.user).select('balance username');
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    return res.json({
+      username: user.username,
+      balance: user.balance,
+      totalGames: 0,
+      winLossRatio: 0,
+      biggestWin: 0,
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Report Error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 };
 
-/**
- * @route   GET /api/report/history
- * @desc    Retrieve all historical report snapshots for the authenticated user.
- */
 export const getUserReportHistory = async (req, res) => {
-  try {
-    const userId = req.user;
-    const history = await getReportHistory(userId);
-    res.json(history);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: 'Server error' });
-  }
+  return res.json([]);
 };

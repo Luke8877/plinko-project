@@ -9,46 +9,40 @@
 
 import api from './api.js';
 
-/**
- * Helper methods for authenticating users and
- * retrieving/updating protected user data.
- */
 const authService = {
   /**
    * Log a user into the application.
    * @param {{ username: string, password: string }} data
-   * @returns {Promise<{ token: string }>}
+   * @returns {Promise<{ token: string, user: object }>}
    */
   login: (data) => api.post('/auth/login', data).then((res) => res.data),
 
   /**
    * Register a new user account.
    * @param {{ username: string, password: string }} data
-   * @returns {Promise<{ token: string }>}
+   * @returns {Promise<{ token: string, user: object }>}
    */
   register: (data) => api.post('/auth/register', data).then((res) => res.data),
 
   /**
-   * Play a round of PlinkOink.
-   * Sends a bet amount and receives game results:
-   * multiplier, updated balance, etc.
+   * Fetch the currently logged-in user's profile.
+   * Requires a valid JWT (automatically attached in api.js).
+   * @returns {Promise<Object>} { username, balance, ... }
+   */
+  getProfile: () => api.get('/auth/profile').then((res) => res.data),
+
+  /**
+   * Fetch a dashboard stats snapshot (balance, wins, etc.)
+   * @returns {Promise<Object>}
+   */
+  getReport: () => api.get('/report').then((res) => res.data),
+
+  /**
+   * Play a round of PlinkOink
    * @param {{ bet: number }} data
    * @returns {Promise<{ multiplier: number, newBalance: number }>}
    */
   playGame: (data) => api.post('/game/play', data).then((res) => res.data),
-
-  /**
-   * Fetch the user's latest gameplay statistics.
-   * This includes:
-   * - Current balance
-   * - Total games played
-   * - Win/loss ratio
-   * - Biggest win
-   *
-   * Used to show the "Quick Stats" panel on dashboard.
-   * @returns {Promise<Object>} Report snapshot for user dashboard
-   */
-  getReport: () => api.get('/report').then((res) => res.data),
 };
 
 export default authService;
