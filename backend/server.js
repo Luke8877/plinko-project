@@ -10,12 +10,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-import {
-  authRoutes,
-  gameRoutes,
-  reportRoutes,
-  leaderboardRoutes,
-} from './routes/index.js';
+import routeBundle from './routes/index.js';
+
+const { authRoutes, gameRoutes, reportRoutes, leaderboardRoutes } = routeBundle;
 
 // Load environment variables from .env file
 dotenv.config();

@@ -5,7 +5,7 @@
  * - Managing game economy (balance, bets)
  * - Triggering pig drops (manual + auto waves)
  * - Calculating payouts when pigs land in slots
- * - Passing scoring events to GameBoard for popup display
+ * - Passing scoring events + multipliers to UI
  * - Rendering board + betting UI layout
  */
 
@@ -13,169 +13,141 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameBoard from '../components/GameBoard';
 import BetPanel from '../betpanel/BetPanel';
-import { fetchBalance, updateBalance } from '@services/balanceService';
+import CornerPig from '../../../shared/components/CornerPig.jsx';
+import AddFundsModal from '../../../shared/components/AddFundsModal.jsx';
+import PigMascot from '@shared/components/PigMascot.jsx';
 
+import { fetchBalance, updateBalance } from '@services/balanceService';
 
 export default function GamePage() {
   const navigate = useNavigate();
-  const boardRef = useRef(null); // Expose dropBatch() from GameBoard
+  const boardRef = useRef(null);
 
-  // Betting configuration
+  // Betting / UI state
   const [mode, setMode] = useState('Ante Up');
-  const [totalBet, setTotalBet] = useState(100); // Total for the wave
-  const [pigCount, setPigCount] = useState(1); // Number of pigs in batch
-
-  // Last pig landing info (drives popup animation in GameBoard)
+  const [totalBet, setTotalBet] = useState(100);
+  const [pigCount, setPigCount] = useState(1);
+  const [isAutoMode, setIsAutoMode] = useState(false);
+  const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [lastImpact, setLastImpact] = useState(null);
+  const [multipliers, setMultipliers] = useState([]);
 
-  // Player account balance (synced with backend)
-  const [balance, setBalance] = useState(0);
-  const balanceRef = useRef(0);
+  // Balance state
+  const [balance, setBalance] = useState(null);
+  const balanceRef = useRef(null);
+  const [initialized, setInitialized] = useState(false);
 
-  // Fetch balance once on mount 
-  useEffect(() => {
-    fetchBalance()
-      .then(res => {
-        setBalance(res.data.balance);
-        balanceRef.current = res.data.balance;
-      })
-      .catch(err => {
-        console.error("Failed to fetch backend balance:", err);
-        setBalance(1000);
-        balanceRef.current = 1000;
-      });
-  }, []);
-
-  // Keep ref in sync
-useEffect(() => {
-  balanceRef.current = balance;
-}, [balance]);
-
-// Sync updated balance back to backend (skip first load)
-useEffect(() => {
-  if (balance === 0) return; // prevents overwriting real DB balance on first mount
-  updateBalance(balance)
-    .catch(err => console.error("Balance sync failed:", err));
-}, [balance]);
-
-// Auto runs waves repeatedly…
-const [isAutoRunning, setIsAutoRunning] = useState(false);
-
-
+  // Add Funds Modal visibility
+  const [showAddFunds, setShowAddFunds] = useState(false);
 
   /**
-   * Called when physics engine reports a pig has landed in a scoring slot.
-   *
-   * Money flow rules:
-   * - We already charged totalBet once at wave start
-   * - Each pig "returns" payout = perPig * multiplier
-   * - perPig = totalBet / pigCount (locked in at wave start)
-   *
-   * Example (1 pig):
-   *   balance = 898, totalBet = 100
-   *   at drop: balance -> 798
-   *   hit 1x: payout = 100 * 1 = 100 → balance -> 898 (break even)
-   *   hit 3.5x: payout = 100 * 3.5 = 350 → balance -> 1,148 (+250 profit)
+   * Add funds to player balance
    */
-  const handleSlotResolved = (slotIndex, multiplier) => {
-    // Guard against invalid config
-    if (pigCount <= 0 || totalBet <= 0) return;
-
-    // Lock in per-pig stake based on current wave settings
-    const perPig = totalBet / pigCount;
-
-    // Amount returned to wallet for this pig
-    const payout = perPig * multiplier;
-
-    // Net result vs. stake (for popup display only)
-    const net = payout - perPig;
-
-    // Update balance: we already removed totalBet up front,
-    // so here we return the full payout for this pig.
-    setBalance((prev) => Number((prev + payout).toFixed(2)));
-
-    // Drive popup animation in GameBoard via lastImpact
-    setLastImpact({
-      slotIndex,
-      multiplier,
-      perPig: Number(perPig.toFixed(2)),
-      payout: Number(payout.toFixed(2)),
-      net: Number(net.toFixed(2)),
-      id: Date.now(), // ensures unique popup instance
-    });
+  const handleAddFunds = (amount) => {
+    setBalance((prev) => prev + amount);
+    setShowAddFunds(false);
   };
 
   /**
-   * Manual single-wave drop
+   * First load: fetch backend balance
+   */
+  useEffect(() => {
+    fetchBalance()
+      .then((res) => {
+        const value = res.data.balance ?? 0;
+        setBalance(value);
+        balanceRef.current = value;
+        setInitialized(true);
+      })
+      .catch(() => setInitialized(true));
+  }, []);
+
+  /**
+   * Keep reference synced to state
+   */
+  useEffect(() => {
+    balanceRef.current = balance;
+  }, [balance]);
+
+  /**
+   * Sync updated balance back to backend
+   */
+  useEffect(() => {
+    if (!initialized || balance === null) return;
+    updateBalance(balance).catch((e) =>
+      console.error('Balance update failed:', e)
+    );
+  }, [balance, initialized]);
+
+  /**
+   * Manual / Single Drop
    */
   const handleManualDrop = () => {
-    if (!boardRef.current) return;
-    if (totalBet <= 0 || pigCount <= 0) return;
-    if (totalBet > balanceRef.current) return; // insufficient funds
-
-    // Charge bet
+    if (!boardRef.current || balanceRef.current < totalBet) return;
     setBalance((prev) => prev - totalBet);
-
-    // Trigger physics engine pig drops
     boardRef.current.dropBatch?.(pigCount);
   };
 
   /**
-   * Auto play loop:
-   * - Pays bet for each wave
-   * - Drops pigs
-   * - Stops if broke or invalid config
+   * Auto play toggle
    */
-  useEffect(() => {
-    if (!isAutoRunning || !boardRef.current) return;
+  const handlePlaceBet = () => {
+    if (isAutoMode) {
+      setIsAutoRunning((prev) => !prev);
+    } else {
+      handleManualDrop();
+    }
+  };
 
+  /**
+   * Score resolution callback from physics engine
+   */
+  const handleSlotResolved = (slotIndex, multiplier) => {
+    if (totalBet <= 0 || pigCount <= 0) return;
+    const perPig = totalBet / pigCount;
+    const payout = perPig * multiplier;
+    setBalance((prev) => Number((prev + payout).toFixed(2)));
+    setLastImpact({ slotIndex, multiplier, id: Date.now() });
+  };
+
+  // Auto drop loop
+  useEffect(() => {
+    if (!isAutoRunning || !isAutoMode || !boardRef.current) return;
     let cancelled = false;
 
-    const runWave = () => {
-      if (cancelled) return;
-
-      // Stop if invalid config
-      if (pigCount <= 0 || totalBet <= 0) {
+    const run = () => {
+      if (cancelled || balanceRef.current < totalBet) {
         setIsAutoRunning(false);
         return;
       }
 
-      // Stop if insufficient funds
-      if (balanceRef.current < totalBet) {
-        setIsAutoRunning(false);
-        return;
-      }
-
-      // Charge bet
-      setBalance((prev) => {
-        const next = prev - totalBet;
-        balanceRef.current = next;
-        return next;
-      });
-
-      // Drop pigs
+      setBalance((prev) => prev - totalBet);
       boardRef.current.dropBatch?.(pigCount);
 
-      // Schedule next wave
-      setTimeout(runWave, 900);
+      setTimeout(run, 900);
     };
 
-    runWave();
-
-    // Cleanup if auto mode cancelled mid-wave
+    run();
     return () => (cancelled = true);
-  }, [isAutoRunning, pigCount, totalBet]);
+  }, [isAutoRunning, isAutoMode, totalBet, pigCount]);
 
   return (
-    <div className="w-screen h-screen bg-surfaceDark text-slate-100 p-6 flex flex-col">
-      {/* Page Title */}
-      <div className="text-center mb-4">
-        <h1 className="text-4xl font-bold text-brandPink">PlinkOink Game</h1>
+    <div className="w-screen h-screen bg-surfaceDark text-slate-100 p-6 flex flex-col relative overflow-hidden">
+      {/* Decorative Pig Mascots */}
+      <CornerPig topLeft bottomRight />
+
+      {/* Title */}
+      <div className="flex items-center justify-center gap-3 mb-4 select-none">
+        <PigMascot size={48} className="drop-shadow-[0_0_6px_#ff2fb4]" />
+        <h1 className="text-4xl font-bold text-brandPink tracking-wide">
+          PlinkOink
+        </h1>
+        <PigMascot size={48} className="drop-shadow-[0_0_6px_#ff2fb4]" />
       </div>
 
-      {/* Main Layout: Bet Panel + Game Board */}
+      {/* Main Layout */}
       <div className="flex flex-1 gap-6 overflow-hidden">
-        {/* Betting Controls */}
+        {/* Left Sidebar */}
         <div className="w-[28%] min-w-[300px]">
           <BetPanel
             mode={mode}
@@ -185,26 +157,30 @@ const [isAutoRunning, setIsAutoRunning] = useState(false);
             pigCount={pigCount}
             onPigCountChange={setPigCount}
             balance={balance}
+            isAutoMode={isAutoMode}
+            onToggleMode={setIsAutoMode}
             isAutoRunning={isAutoRunning}
-            onManualDrop={handleManualDrop}
-            onToggleAuto={() => setIsAutoRunning((prev) => !prev)}
+            onPlaceBet={handlePlaceBet}
+            multipliers={multipliers}
+            onAddFunds={() => setShowAddFunds(true)} // 🔥 Add Funds button support
           />
         </div>
 
-        {/* Physics Game Board */}
-        <div className="flex-1 bg-cardDark rounded-xl border border-brandPink/30 p-4 flex justify-center items-center">
+        {/* Game Board */}
+        <div className="flex-1 bg-cardDark rounded-xl border border-brandPink/30 p-4 flex justify-center items-center relative">
           <div className="relative w-full max-w-[1000px] aspect-[5/4]">
             <GameBoard
               ref={boardRef}
               mode={mode}
               lastImpact={lastImpact}
               onSlotResolved={handleSlotResolved}
+              onMultipliersChange={setMultipliers}
             />
           </div>
         </div>
       </div>
 
-      {/* Return Navigation */}
+      {/* Back navigation */}
       <div className="text-center mt-4">
         <button
           className="text-brandPink text-sm underline"
@@ -213,6 +189,13 @@ const [isAutoRunning, setIsAutoRunning] = useState(false);
           Back to Dashboard
         </button>
       </div>
+
+      {/* Modal Portal (Always Last) */}
+      <AddFundsModal
+        visible={showAddFunds}
+        onClose={() => setShowAddFunds(false)}
+        onSubmit={handleAddFunds}
+      />
     </div>
   );
 }

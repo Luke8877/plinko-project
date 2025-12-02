@@ -109,10 +109,10 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
       runnerRef.current = null;
       engineRef.current = null;
     };
-  }, [boardRef]);
+  }, [boardRef, mode]);
 
   /**
-   * 🔁 Keep multipliers fresh when risk mode changes
+   * Keep multipliers fresh when risk mode changes
    */
   useEffect(() => {
     multipliersRef.current = generateMultipliers(mode, slots.length);
@@ -120,9 +120,8 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
   }, [mode, slots.length]);
 
   /**
-   *  MOST IMPORTANT FIX:
+   *
    * Subscribe to scoring events using latest callback.
-   * Prevents stale closure problem with bets always = 100.
    */
   useEffect(() => {
     if (!engineRef.current) return;
@@ -147,7 +146,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
         const slotIndex = Number(slotBody.label.split('-')[1]);
         const multiplier = multipliersRef.current[slotIndex] ?? 1;
 
-        // Nice bounce feedback
+        //bounce feedback
         Matter.Body.setVelocity(pigBody, { x: 0, y: -2 });
 
         // Remove pig + notify UI after hit resolves

@@ -9,9 +9,9 @@ import gameRoutes from './gameRoutes.js';
 import reportRoutes from './reportRoutes.js';
 import leaderboardRoutes from './leaderboardRoutes.js';
 
-export {
+export default {
   authRoutes,
   gameRoutes,
   reportRoutes,
-  leaderboardRoutes
+  leaderboardRoutes,
 };
