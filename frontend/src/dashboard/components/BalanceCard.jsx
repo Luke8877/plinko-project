@@ -1,46 +1,16 @@
-import { useEffect } from 'react';
-import authService from '@services/authService';
-import { useBalance } from '@context/BalanceContext';
+import BaseCard from './BaseCard';
 
-import WelcomeCard from '../components/WelcomeCard';
-import StatsCard from '../components/StatsCard';
-import BalanceCard from '../components/BalanceCard';
-import GamePreview from '../components/GamePreview';
-import LeaderboardCard from '../components/LeaderboardCard';
-import CornerPig from '@shared/components/CornerPig.jsx';
-import FloatingPig from '@/shared/components/FloatingPig';
-
-export default function DashboardPage() {
-  const { setBalance } = useBalance();
-
-  useEffect(() => {
-    async function loadReport() {
-      try {
-        const data = await authService.getReport();
-        setBalance(data.balance); // ⬅ Update global balance
-        // StatsCard will later read additional stats
-      } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-      }
-    }
-    loadReport();
-  }, [setBalance]);
+export default function BalanceCard({ balance }) {
+  const formattedBalance =
+    balance !== undefined ? `$${balance.toLocaleString()}` : '$----';
 
   return (
-    <div className="min-h-screen bg-surfaceDark text-white flex items-center justify-center px-6">
-      {/* corner pigs */}
-      <CornerPig topRight bottomLeft />
+    <BaseCard className="row-start-1 col-start-3 relative overflow-hidden">
+      <h2 className="text-xl font-semibold text-brandPink mb-2">Balance</h2>
 
-      {/* floating pigs */}
-      <FloatingPig size={90} />
-
-      <div className="grid grid-cols-3 grid-rows-[180px_380px] gap-6 max-w-7xl w-full">
-        <WelcomeCard />
-        <StatsCard />
-        <BalanceCard />
-        <GamePreview />
-        <LeaderboardCard />
-      </div>
-    </div>
+      <p className="text-4xl font-bold text-brandPink mb-1">
+        {formattedBalance}
+      </p>
+    </BaseCard>
   );
 }
