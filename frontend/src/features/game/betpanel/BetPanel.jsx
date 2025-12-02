@@ -1,8 +1,10 @@
 /**
  * BetPanel (Container)
- *
- * Delegates UI to: BetHeader, BetInputs, BetActions
- * Holds absolutely no rendering logic specific to fields or buttons.
+ * -------------------------------------------------------------
+ * Holds and coordinates betting UI pieces:
+ * - Displays balance + Add Funds button
+ * - Bet entry inputs (amount + pig count)
+ * - Primary "Place Bet" button
  */
 
 import BetHeader from './BetHeader.jsx';
@@ -17,16 +19,26 @@ export default function BetPanel({
   pigCount,
   onPigCountChange,
   balance,
-  maxProfit,
+  isAutoMode,
+  onToggleMode,
   isAutoRunning,
-  onManualDrop,
-  onToggleAuto,
+  onPlaceBet,
+  onAddFunds,
+  multipliers = [],
 }) {
   const perPig = pigCount > 0 ? Number((totalBet / pigCount).toFixed(2)) : 0;
 
+  const highestMultiplier =
+    multipliers.length > 0 ? Math.max(...multipliers) : 0;
+
+  const maxWin =
+    pigCount > 0
+      ? Number((perPig * highestMultiplier * pigCount).toFixed(2))
+      : 0;
+
   return (
-    <div className="bg-cardDark rounded-xl border border-brandPink/30 h-full flex flex-col p-6">
-      <BetHeader balance={balance} maxProfit={maxProfit} />
+    <div className="bg-cardDark rounded-xl border border-brandPink/30 h-full flex flex-col p-5 gap-4">
+      <BetHeader balance={balance} onAddFunds={onAddFunds} />
 
       <BetInputs
         mode={mode}
@@ -36,12 +48,17 @@ export default function BetPanel({
         pigCount={pigCount}
         onPigCountChange={onPigCountChange}
         perPig={perPig}
+        maxWin={maxWin}
       />
 
       <BetActions
+        isAutoMode={isAutoMode}
+        onToggleMode={onToggleMode}
         isAutoRunning={isAutoRunning}
-        onManualDrop={onManualDrop}
-        onToggleAuto={onToggleAuto}
+        onPlaceBet={onPlaceBet}
+        balance={balance}
+        totalBet={totalBet}
+        pigCount={pigCount}
       />
     </div>
   );

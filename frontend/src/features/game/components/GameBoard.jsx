@@ -10,42 +10,70 @@ import usePlinkoEngine from '../hooks/usePlinkoEngine';
 import PigMascot from '../../../shared/components/PigMascot';
 
 /**
- * Visual layer for PlinkOink gameplay.
+ * GameBoard (Visual Layer)
+ * -------------------------------------------------------------
+ * Owns the rendering surface for the physics engine.
+ * Handles visual-only state:
+ *  - Peg rendering
+ *  - Falling pig rendering
+ *  - Slot highlighting
+ *  - Payout popups
  *
- * Responsibilities:
- * - Owns the rendering surface for Matter.js physics (boardRef)
- * - Renders pegs, falling pigs, multipliers, and win popups
- * - Handles per-slot highlighting when a scoring event occurs
- * - Exposes dropBatch() upstream via ref → called from GamePage
- *
- * Notes:
- * - Physics state comes from usePlinkoEngine (render-only here)
- * - All payout logic lives in GamePage → this component is purely visual
+ * Game logic (bets, payouts, balance) stays in GamePage.
+ * Exposes dropBatch() to GamePage via forwarded ref.
  */
 const GameBoard = forwardRef(function GameBoard(
-  { mode, onSlotResolved, lastImpact },
+  {
+    mode,
+    onSlotResolved, // callback for when a pig lands (score event)
+    lastImpact, // drives popup animation
+    onMultipliersChange, // NEW: Send multipliers up to UI
+  },
   ref
 ) {
   const boardRef = useRef(null);
+
+  // UI helpers (visual enhancements only)
   const [highlightSlot, setHighlightSlot] = useState(null);
   const [popups, setPopups] = useState([]);
 
+  /**
+   * Callback from Plinko Engine → pig landed
+   * Pass multiplier upstream and highlight slot visually.
+   */
   const handleScoreFromEngine = useCallback(
     (slotIndex, multiplier) => {
       setHighlightSlot(slotIndex);
-      onSlotResolved?.(slotIndex, multiplier);
+      onSlotResolved?.(slotIndex, multiplier); // GamePage payout logic
+
+      // Remove highlight after animation
       setTimeout(() => setHighlightSlot(null), 400);
     },
     [onSlotResolved]
   );
 
+  /**
+   * Pull live physics elements from the custom Plinko engine hook.
+   * Includes pegs, balls, slots, multipliers, and dropBatch() control API.
+   */
   const { balls, pegs, slots, multipliers, dropBatch } = usePlinkoEngine(
     boardRef,
     mode,
     handleScoreFromEngine
   );
 
-  // Animate popups on win
+  /**
+   * Emit multipliers to GamePage whenever board layout changes.
+   * This enables Max Win UI to update live.
+   */
+  useEffect(() => {
+    if (!multipliers || !multipliers.length) return;
+    onMultipliersChange?.(multipliers);
+  }, [multipliers, onMultipliersChange]);
+
+  /**
+   * Show floating payout popups under GameBoard UI.
+   */
   useEffect(() => {
     if (!lastImpact || !boardRef.current || !slots.length) return;
 
@@ -58,8 +86,10 @@ const GameBoard = forwardRef(function GameBoard(
     const x = slotWidth * slotIndex + slotWidth / 2;
     const y = height - 60;
 
+    // Add popup to UI state
     setPopups((prev) => [...prev, { id, x, y, payout, multiplier }]);
 
+    // Auto-remove after animation completes
     const cleanup = setTimeout(() => {
       setPopups((prev) => prev.filter((p) => p.id !== id));
     }, 900);
@@ -67,8 +97,13 @@ const GameBoard = forwardRef(function GameBoard(
     return () => clearTimeout(cleanup);
   }, [lastImpact, slots.length]);
 
+  /**
+   * Expose imperative game engine actions to the parent component.
+   * GamePage calls `boardRef.current.dropBatch(count)`
+   */
   useImperativeHandle(ref, () => ({
     dropBatch,
+    slotMultipliers: multipliers, // for debugging / UI if needed
   }));
 
   return (
@@ -98,7 +133,7 @@ const GameBoard = forwardRef(function GameBoard(
         />
       ))}
 
-      {/* Pigs */}
+      {/* Falling Pig Mascots */}
       {balls.map((ball) => (
         <PigMascot
           key={ball.id}
@@ -132,7 +167,7 @@ const GameBoard = forwardRef(function GameBoard(
         </div>
       ))}
 
-      {/* Multipliers */}
+      {/* Slot Multiplier Labels */}
       {slots.map((_, i) => {
         const slotWidth = boardRef.current?.clientWidth / slots.length || 0;
         return (

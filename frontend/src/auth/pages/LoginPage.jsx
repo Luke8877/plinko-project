@@ -18,11 +18,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surfaceDark text-slate-100 relative overflow-hidden">
       {/* corner pigs */}
-      <CornerPig corner="bottom-left" size={120} />
-      <CornerPig corner="top-right" size={90} />
+      <CornerPig topRight bottomLeft topLeft bottomRight />
 
       {/* floating pigs */}
-      <FloatingPig size={90} />
       <FloatingPig size={90} />
 
       {/* Auth card */}

@@ -56,7 +56,7 @@ export function generatePegGrid(width, height) {
 
       const peg = Bodies.circle(x, rowY, pegRadius, {
         isStatic: true,
-        restitution: 0.3, // adds a satisfying bounce reaction
+        restitution: 0.3, // adds a bounce reaction
       });
 
       pegs.push({
