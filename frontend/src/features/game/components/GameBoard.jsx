@@ -10,51 +10,55 @@ import usePlinkoEngine from '../hooks/usePlinkoEngine';
 import PigMascot from '../../../shared/components/PigMascot';
 
 /**
- * GameBoard (Visual Layer)
- * -------------------------------------------------------------
- * Owns the rendering surface for the physics engine.
- * Handles visual-only state:
- *  - Peg rendering
- *  - Falling pig rendering
- *  - Slot highlighting
- *  - Payout popups
+ * GameBoard Component
+ * ---------------------------------------------------------
+ * Owns rendering + UI reactions to the Plinko physics engine.
  *
- * Game logic (bets, payouts, balance) stays in GamePage.
- * Exposes dropBatch() to GamePage via forwarded ref.
+ * Responsibilities:
+ * • Render pegs, falling pigs, and slot payoff labels
+ * • Highlight winning slot upon pig landing
+ * • Display payout popups for scored events
+ * • Expose engine triggers (dropBatch) to GamePage through ref
+ *
+ * Important Architecture Note:
+ * • Betting + balance logic stays in GamePage to enforce backend derivation
+ * • GameBoard only visualizes results — prevents client-side cheating
  */
+
 const GameBoard = forwardRef(function GameBoard(
   {
     mode,
-    onSlotResolved, // callback for when a pig lands (score event)
-    lastImpact, // drives popup animation
-    onMultipliersChange, // NEW: Send multipliers up to UI
+    onSlotResolved, // Callback for GamePage to update payout + balance
+    lastImpact, // Drives payout popup animation
+    onMultipliersChange, // Pushes slot multipliers upward for UI calculations
   },
   ref
 ) {
   const boardRef = useRef(null);
 
-  // UI helpers (visual enhancements only)
+  // Visual-only state managed in GameBoard
   const [highlightSlot, setHighlightSlot] = useState(null);
   const [popups, setPopups] = useState([]);
 
   /**
-   * Callback from Plinko Engine → pig landed
-   * Pass multiplier upstream and highlight slot visually.
+   * Handle scored event from Plinko Engine
+   * • Receives slot + multiplier from physics
+   * • Notifies GamePage to trigger payout changes
+   * • Temporarily highlights slot for visual feedback
    */
   const handleScoreFromEngine = useCallback(
     (slotIndex, multiplier) => {
       setHighlightSlot(slotIndex);
-      onSlotResolved?.(slotIndex, multiplier); // GamePage payout logic
+      onSlotResolved?.(slotIndex, multiplier);
 
-      // Remove highlight after animation
       setTimeout(() => setHighlightSlot(null), 400);
     },
     [onSlotResolved]
   );
 
   /**
-   * Pull live physics elements from the custom Plinko engine hook.
-   * Includes pegs, balls, slots, multipliers, and dropBatch() control API.
+   * Connect to custom Plinko engine hook
+   * Returns current physics objects + dropBatch() input trigger
    */
   const { balls, pegs, slots, multipliers, dropBatch } = usePlinkoEngine(
     boardRef,
@@ -63,16 +67,16 @@ const GameBoard = forwardRef(function GameBoard(
   );
 
   /**
-   * Emit multipliers to GamePage whenever board layout changes.
-   * This enables Max Win UI to update live.
+   * Emit updated multipliers to GamePage
+   * Enables "Max Win" calculations to be fully backend-safe
    */
   useEffect(() => {
-    if (!multipliers || !multipliers.length) return;
+    if (!multipliers?.length) return;
     onMultipliersChange?.(multipliers);
   }, [multipliers, onMultipliersChange]);
 
   /**
-   * Show floating payout popups under GameBoard UI.
+   * Create animated score popups when a pig lands in a slot
    */
   useEffect(() => {
     if (!lastImpact || !boardRef.current || !slots.length) return;
@@ -84,12 +88,12 @@ const GameBoard = forwardRef(function GameBoard(
     const slotWidth = width / slots.length;
 
     const x = slotWidth * slotIndex + slotWidth / 2;
-    const y = height - 60;
+    const y = height - 60; // Slightly above slots
 
     // Add popup to UI state
     setPopups((prev) => [...prev, { id, x, y, payout, multiplier }]);
 
-    // Auto-remove after animation completes
+    // Auto-remove popup after fade animation
     const cleanup = setTimeout(() => {
       setPopups((prev) => prev.filter((p) => p.id !== id));
     }, 900);
@@ -98,12 +102,13 @@ const GameBoard = forwardRef(function GameBoard(
   }, [lastImpact, slots.length]);
 
   /**
-   * Expose imperative game engine actions to the parent component.
-   * GamePage calls `boardRef.current.dropBatch(count)`
+   * Bridge imperative actions to parent
+   * → GamePage can call:
+   * boardRef.current.dropBatch(count)
    */
   useImperativeHandle(ref, () => ({
     dropBatch,
-    slotMultipliers: multipliers, // for debugging / UI if needed
+    slotMultipliers: multipliers, // Optional debugging / UI
   }));
 
   return (
@@ -117,7 +122,7 @@ const GameBoard = forwardRef(function GameBoard(
         borderRadius: '16px',
       }}
     >
-      {/* Pegs */}
+      {/* Peg Render */}
       {pegs.map(({ id, body, radius }) => (
         <div
           key={id}
@@ -133,7 +138,7 @@ const GameBoard = forwardRef(function GameBoard(
         />
       ))}
 
-      {/* Falling Pig Mascots */}
+      {/* Falling Pig Bodies */}
       {balls.map((ball) => (
         <PigMascot
           key={ball.id}
@@ -148,7 +153,7 @@ const GameBoard = forwardRef(function GameBoard(
         />
       ))}
 
-      {/* Payout popups */}
+      {/* Score Popups */}
       {popups.map(({ id, x, y, payout, multiplier }) => (
         <div
           key={id}
@@ -167,7 +172,7 @@ const GameBoard = forwardRef(function GameBoard(
         </div>
       ))}
 
-      {/* Slot Multiplier Labels */}
+      {/* Slot Labels */}
       {slots.map((_, i) => {
         const slotWidth = boardRef.current?.clientWidth / slots.length || 0;
         return (

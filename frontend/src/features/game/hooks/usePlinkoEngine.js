@@ -9,18 +9,28 @@ import {
 } from './index.js';
 
 /**
- * Physics engine + rendering orchestration hook for the PlinkOink game.
+ * usePlinkoEngine — Custom Physics & Rendering Hook
+ * ---------------------------------------------------------
+ * Centralized orchestration for PlinkOink's Plinko simulation:
  *
- * Responsibilities:
- * - Initialize and manage the Matter.js engine lifecycle
- * - Generate world geometry (pegs + slots + static boundaries)
- * - Track real-time pig physics and notify GamePage on scoring events
- * - Expose dropBatch() API for upstream controls
+ * Engine Lifecycle:
+ * • Initialize Matter.js world + runner on mount
+ * • Generate pegs + slots responsively to board size
+ * • Attach scoring collision listeners
+ * • Cleanup gracefully on unmount or mode change
  *
- * NOTE:
- * Scoring callback (onBallLanded) must update when bets change.
- * We therefore move collision listener registration into its own
- * effect that re-runs whenever callback updates.
+ * Visual State Management:
+ * • Tracks positions/angles of active pigs each frame
+ * • Syncs peg + slot geometry to render layer
+ *
+ * Gameplay Integration:
+ * • Emits scoring results to GamePage through callback
+ * • Exposes `dropBatch()` for controlled pig spawning
+ * • Keeps multipliers updated for risk-mode changes
+ *
+ * Security Note:
+ * • Payouts remain backend-validated — GameBoard visuals
+ *   never directly modify balance (prevents client-side cheats)
  */
 
 export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
@@ -28,11 +38,11 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
   const runnerRef = useRef(null);
   const boardSizeRef = useRef({ width: 0, height: 0 });
 
-  // Active pig bodies tracked in dictionary for render sync
+  // Active physics bodies for rendering sync
   const pigBodiesRef = useRef({});
   const nextPigIdRef = useRef(1);
 
-  // Visual state derived from physics engine
+  // Render-layer state (mirrors physics)
   const [balls, setBalls] = useState([]);
   const [pegs, setPegs] = useState([]);
   const [slots, setSlots] = useState([]);
@@ -40,7 +50,8 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
   const multipliersRef = useRef([]);
 
   /**
-   * One-time physics world initialization
+   * Initial engine + world geometry setup
+   * Runs once when board first exists on screen.
    */
   useEffect(() => {
     if (!boardRef.current) return;
@@ -51,14 +62,16 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
 
     const engine = createEngine(width, height);
     engineRef.current = engine;
+
     const world = engine.world;
     const { World, Runner, Events } = Matter;
 
-    // Build pegs & slots
+    // --- Peg Field Layout ---
     const { pegs: pegData, rows, topPegCount } = generatePegGrid(width, height);
     pegData.forEach((p) => World.add(world, p.body));
     setPegs(pegData);
 
+    // --- Slot Sensors ---
     const { slotBodies, slotCount } = generateSlots(
       width,
       height,
@@ -68,24 +81,21 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
     slotBodies.forEach((s) => World.add(world, s));
     setSlots(slotBodies);
 
-    // Initial multipliers
+    // Initial multipliers based on risk mode
     const baseMultipliers = generateMultipliers(mode, slotCount);
     multipliersRef.current = baseMultipliers;
     setMultipliers(baseMultipliers);
 
-    // Start Matter loop
+    // Start physics updates
     const runner = Runner.create();
     runnerRef.current = runner;
     Runner.run(runner, engine);
 
-    // Update ball render state on each tick
+    /**
+     * Each tick: sync all pig body transforms into ball render model
+     */
     Events.on(engine, 'afterUpdate', () => {
       const bodies = Object.values(pigBodiesRef.current);
-      if (bodies.length === 0) {
-        setBalls([]);
-        return;
-      }
-
       setBalls(
         bodies.map((body) => ({
           id: body.plugin.pigId,
@@ -98,7 +108,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
     });
 
     /**
-     * Cleanup physics on unmount or resize
+     * Full teardown on unmount
      */
     return () => {
       runnerRef.current && Runner.stop(runnerRef.current);
@@ -112,7 +122,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
   }, [boardRef, mode]);
 
   /**
-   * Keep multipliers fresh when risk mode changes
+   * Update multipliers when risk mode changes
    */
   useEffect(() => {
     multipliersRef.current = generateMultipliers(mode, slots.length);
@@ -120,8 +130,9 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
   }, [mode, slots.length]);
 
   /**
-   *
-   * Subscribe to scoring events using latest callback.
+   * Collision Subscription
+   * Uses latest callback via effect dependency
+   * → ensures payout logic is always fresh
    */
   useEffect(() => {
     if (!engineRef.current) return;
@@ -139,27 +150,27 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
         );
         if (!pigBody || !slotBody) return;
 
-        // Prevent double processing same pig
+        // Prevent double score exploitation
         if (pigBody.plugin?.scored) return;
         pigBody.plugin.scored = true;
 
         const slotIndex = Number(slotBody.label.split('-')[1]);
         const multiplier = multipliersRef.current[slotIndex] ?? 1;
 
-        //bounce feedback
+        // Minor bounce feedback for satisfying hit response
         Matter.Body.setVelocity(pigBody, { x: 0, y: -2 });
 
-        // Remove pig + notify UI after hit resolves
+        // Delay removal slightly for visible slot landing
         setTimeout(() => {
           const id = pigBody.plugin?.pigId;
           if (id != null && pigBodiesRef.current[id]) {
             Matter.World.remove(world, pigBody);
             delete pigBodiesRef.current[id];
 
-            //  send scoring result to GamePage economy
+            // Notify GamePage → drives payout + popups
             onBallLanded?.(slotIndex, multiplier);
 
-            // Update visible balls
+            // Update visible model
             setBalls(
               Object.values(pigBodiesRef.current).map((b) => ({
                 id: b.plugin.pigId,
@@ -175,17 +186,15 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
     };
 
     Events.on(engine, 'collisionStart', handleCollision);
-
-    // Cleanup old listener before replacing with fresh one
     return () => Events.off(engine, 'collisionStart', handleCollision);
-  }, [onBallLanded]); // <--  Always sync latest callback
+  }, [onBallLanded]);
 
   /**
-   * API to spawn pigs (used by GamePage)
+   * Public spawn API → GamePage calls this to drop pigs
    */
   const dropBatch = useCallback(
     (count) => {
-      if (!engineRef.current || !boardRef.current) return;
+      if (!engineRef.current) return;
 
       const { width, height } = boardSizeRef.current;
 
@@ -198,6 +207,7 @@ export default function usePlinkoEngine(boardRef, mode, onBallLanded) {
         nextPigIdRef,
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [boardRef]
   );
 

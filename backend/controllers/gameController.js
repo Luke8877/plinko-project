@@ -1,28 +1,27 @@
 /**
  * Game Controller
  * ---------------------------------------------------------
- * Business logic for PlinkOink:
- * - Fetch user balance
- * - Update user balance
- * - Simulate backend-driven Plinko round
- * ---------------------------------------------------------
- * Note: REST route definitions live in gameRoutes.js,
- * this file only contains logic used by those endpoints.
+ * Backend-validated game operations for PlinkOink:
+ * • Fetch authenticated user balance
+ * • Apply secure betting and payout logic
+ * • Persist updated balance and game history
+ * Notes:
+ * • Backend must always enforce payout rules
+ * • Routes are defined separately in gameRoutes.js
  */
 
 import { getRandomSlot, saveGame, updateBalance } from '../services/index.js';
 import { User } from '../models/index.js';
 
 /**
- * Controller: Return the authenticated user's current balance.
+ * @route  GET /api/game/balance
+ * @desc   Return authenticated user's balance
+ * @access Private
  */
 export const getBalance = async (req, res) => {
   try {
     const user = await User.findById(req.user).select('balance');
-
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ msg: 'User not found' });
 
     res.json({ balance: user.balance });
   } catch (err) {
@@ -32,13 +31,13 @@ export const getBalance = async (req, res) => {
 };
 
 /**
- * Controller: Overwrite balance for authenticated user.
- * Used by frontend to sync state after bets + payouts.
+ * @route  PUT /api/game/balance
+ * @desc   Overwrite authenticated user's balance
+ * @access Private
  */
 export const updateBalanceController = async (req, res) => {
   try {
     const { balance } = req.body;
-
     if (balance == null || balance < 0) {
       return res.status(400).json({ msg: 'Invalid balance value' });
     }
@@ -49,9 +48,7 @@ export const updateBalanceController = async (req, res) => {
       { new: true }
     ).select('balance');
 
-    if (!updated) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
+    if (!updated) return res.status(404).json({ msg: 'User not found' });
 
     res.json({ balance: updated.balance });
   } catch (err) {
@@ -61,8 +58,9 @@ export const updateBalanceController = async (req, res) => {
 };
 
 /**
- * Controller: Play one round of Plinko on backend RNG.
- * Deducts bet, applies multiplier, updates DB, records history.
+ * @route  POST /api/game/play
+ * @desc   Execute backend RNG round and return results
+ * @access Private
  */
 export const playRound = async (req, res) => {
   try {
@@ -76,18 +74,14 @@ export const playRound = async (req, res) => {
       return res.status(400).json({ msg: 'Invalid bet amount' });
     }
 
-    // Deduct bet
     const currentBalance = user.balance - bet;
 
-    // Backend-safe RNG (replace later with physics multiplier)
     const multipliers = [0.5, 1, 2, 5];
     const multiplier = getRandomSlot(multipliers);
 
-    // Calculate payout
     const payout = Math.round(bet * multiplier);
     const newBalance = currentBalance + payout;
 
-    // Persist updates
     await updateBalance(userId, newBalance);
     await saveGame(userId, bet, payout, multiplier);
 

@@ -1,9 +1,16 @@
 /**
  * Auth Form Component
- * --------------------------------------------------
- * Handles both Login and Register flows inside one UI.
- * Keeps authentication logic centralized instead of spread
- * across multiple pages or components.
+ * ---------------------------------------------------------
+ * Unified Login/Register UI for the PlinkOink app.
+ * Centralizes authentication UX — reduces duplication
+ * and maintains consistent styling across auth flows.
+ *
+ * Responsibilities:
+ * • Collect username/password input
+ * • Handle login OR registration based on "mode"
+ * • Persist JWT token to localStorage upon success
+ * • Display user-friendly error feedback
+ * • Redirect authenticated users to their dashboard
  */
 
 import { useState } from 'react';
@@ -11,8 +18,9 @@ import { useNavigate } from 'react-router-dom';
 import authService from '@services/authService.js';
 
 /**
- * Switching form mode enables reuse of input elements and styling.
- * Local state keeps fields controlled + error feedback visible.
+ * Manages controlled form inputs and provides quick
+ * mode switching between "login" and "register"
+ * while reusing the same layout and interaction pattern.
  */
 export default function AuthForm() {
   const [mode, setMode] = useState('login'); // login or register mode
@@ -23,36 +31,36 @@ export default function AuthForm() {
   const navigate = useNavigate();
 
   /**
-   * Handle submission to either login or register endpoint.
-   * Stores JWT token when successful and redirects user
-   * into authenticated area of the app (Dashboard).
+   * Submit form to backend auth endpoints.
+   * Stores JWT token and transitions user
+   * into protected app flow upon validation.
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      // Mode determines which API function is invoked
+      // Choose endpoint dynamically based on current mode
       const endpoint = mode === 'login' ? 'login' : 'register';
       const res = await authService[endpoint]({ username, password });
 
-      // Persist token for future authenticated requests
+      // Persist token for authenticated API usage
       localStorage.setItem('token', res.token);
 
-      // Redirect to protected route
+      // Navigate into protected app workspace
       navigate('/dashboard');
     } catch (err) {
-      // Graceful error feedback for invalid credentials/username taken
-      setError(err.response?.data?.message || 'Authentication failed.');
+      // Display backend-provided message or fallback error
+      setError(err.response?.data?.msg || 'Authentication failed.');
     }
   };
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-      {/* Inline API error display */}
+      {/* Backend error feedback */}
       {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 
-      {/* Controlled username input */}
+      {/* Username input (controlled) */}
       <input
         type="text"
         placeholder="Username"
@@ -61,7 +69,7 @@ export default function AuthForm() {
         onChange={(e) => setUsername(e.target.value)}
       />
 
-      {/* Controlled password input */}
+      {/* Password input (controlled) */}
       <input
         type="password"
         placeholder="Password"
@@ -70,7 +78,7 @@ export default function AuthForm() {
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      {/* Action button updates text based on mode */}
+      {/* Submit CTA (text varies by mode) */}
       <button
         type="submit"
         className="bg-brandPink text-black py-2 rounded-full font-semibold hover:scale-[1.02] transition-transform"
@@ -78,7 +86,7 @@ export default function AuthForm() {
         {mode === 'login' ? 'Login' : 'Create Account'}
       </button>
 
-      {/* Mode toggle (login <-> register) */}
+      {/* Inline route switcher (login ⇆ register) */}
       <p
         onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
         className="text-sm text-brandPink cursor-pointer text-center hover:underline"

@@ -37,3 +37,33 @@
 | Nov 27  | Implemented Game route with bet submission + backend results               | 1 hr        |
 | Nov 27  | Updated project documentation and code comments                            | 45 min      |
 | Nov 27  | Version control: feature branching, PR reviews, merges                     | 1 hr        |
+| Nov 28  | Built bet panel UI + validation logic                                      | 2 hrs       |
+| Nov 28  | Integrated difficulty modes (Ante Up, Weekend Gambler, High Roller)        | 1.5 hrs     |
+| Nov 28  | Added individual pig value calculation and dynamic Max Win indicator       | 1 hr        |
+| Nov 28  | Manual & Auto play toggle + control handling                               | 1 hr        |
+| Nov 28  | Styling polish, responsive alignment tweaks                                | 45 min      |
+| Nov 30  | Implemented peg grid generation + collision detection base                 | 3 hrs       |
+| Nov 30  | Physics tuning: pig bounce randomness, slot targeting                      | 2 hrs       |
+| Nov 30  | Finalized multiplier slot mapping + UI slot label layout                   | 1.5 hrs     |
+| Nov 30  | Added payout calculation + backend syncing of updated balance              | 1 hr        |
+| Dec 1   | Game polish: pig visuals, animation smoothing, landing detection           | 3 hrs       |
+| Dec 1   | Implemented loss/win display & error handling for invalid states           | 1.5 hrs     |
+| Dec 1   | Dashboard visual improvements + mascot interaction expansions              | 1 hr        |
+| Dec 1   | Version control cleanup                                                    | 1 hr        |
+| Dec 2   | UX pass over game & dashboard, button states + loading handling            | 2 hrs       |
+| Dec 2   | Documentation updates for milestone submission                             | 1 hr 30 min |
+| Dec 2   | Refactoring hooks structure in `/features/game` for maintainability        | 1 hr        |
+| Dec 5   | Documentation updates for milestone submission v2                          | 2 hrs       |
+
+---
+
+### Total Time Invested _(as of Milestone 3)_
+
+**~50+ hours** across backend, UI, design, game physics, documentation, and version control.
+
+---
+
+### Notes
+
+> The majority of the work from Nov 28 – Dec 2 consisted of merging design with real gameplay logic the highest difficulty portion of the project so far.  
+> This period also represents the turning point where PlinkOink shifted from UI mock-up to **fully playable MVP**.

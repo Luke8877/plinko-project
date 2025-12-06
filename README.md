@@ -1,108 +1,76 @@
-# Plinko Project
+# PlinkOink
 
-A full-stack web application inspired by the classic Plinko game.  
-Players can register, log in, and play rounds that simulate a Plinko board with randomized multipliers.  
-User progress, balances, and performance reports are stored and tracked in a MongoDB Atlas database.
+A fun, arcade-style Plinko web game
 
----
+PlinkOink is a browser-based game inspired by the classic Plinko board.  
+Players register, place bets, and watch animated pigs bounce down a physics board into different multiplier zones that determine their winnings.
 
-## Overview
-
-The goal of this project is to build a fun, data-driven web app that demonstrates the use of modern web technologies, backend logic, and persistent storage.  
-It was developed as part of the **CPRO 2501 - Software Design & Development** course.
+This project was developed as part of **CPRO 2501 – Software Design & Development** at Red Deer Polytechnic.
 
 ---
 
-## Tech Stack
+## What You Can Do
 
-**Frontend**
+- Create an account and log in securely
+- Add credits to your balance
+- Choose your bet settings:
+  - Gameplay Mode: **Ante Up / Weekend Gambler / High Roller**
+  - Number of pigs (1–5)
+  - Manual or Auto play
+- Watch pigs drop through the board with real physics
+- Win (or lose!) credits based on where they land
+- Return to the dashboard to see your updated balance
 
-- React (Vite)
-- Tailwind CSS (planned)
-
-**Backend**
-
-- Node.js / Express
-- MongoDB Atlas (via Mongoose ODM)
-- JWT authentication
-- bcrypt for password hashing
-- dotenv, CORS
-
----
-
-## Project Structure
-
-backend/
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── services/
-├── utils/
-├── node_modules/
-├── package.json
-├── package-lock.json
-└── server.js
-
-frontend/
-├── public/
-├── src/
-│ ├── components/
-│ ├── context/
-│ ├── pages/
-│ ├── services/
-│ ├── App.css
-│ ├── App.jsx
-│ ├── index.css
-│ └── main.jsx
-├── package.json
-├── package-lock.json
-├── vite.config.js
-└── index.html
-
-docs/
-├── backlog.md
-├── milestone1.md
-├── milestone2.md
-└── timelog.md
-
-.gitignore  
-README.md
+Core gameplay and user flow are fully complete in this MVP version.
 
 ---
 
-## Core Features
+## How It Works (High-Level)
 
-- **User Authentication** — Secure registration and login with JWT tokens.
-- **Plinko Game Logic** — Simulates randomized multiplier results and updates user balance.
-- **Reporting System** — Tracks user stats such as total games, win/loss ratio, and biggest win.
-- **Leaderboard** — Displays top users ranked by balance.
-- **Persistent Storage** — MongoDB Atlas database storing users, rounds, and reports.
+PlinkOink combines:
 
----
+- A real-time animated Plinko board built in React
+- A secure backend that validates every result
+- Persistent account balances and authentication
+- Dark neon arcade-style UI and mascot animations
 
-## Future Plans
-
-- Connect frontend UI to backend routes.
-- Add animations and an interactive Plinko board.
-- Build a statistics dashboard for user performance.
-- Improve overall UI/UX and responsive design.
+No highly technical setup needed to understand — you play, the backend keeps everything fair.
 
 ---
 
-## Learning Goals
+## Technologies Used
 
-This project focuses on understanding:
+### Frontend
 
-- The MVC architecture pattern in Node.js and Express.
-- REST API development and testing with Postman.
-- Authentication, authorization, and secure route handling.
-- Database modeling and aggregation with MongoDB/Mongoose.
-- Frontend-backend integration in a full-stack app.
+- **React (Vite)** – component-based UI and reactivity
+- **Tailwind CSS** – fast styling with custom dark arcade theme
+- **Framer Motion** – UI animations and smooth motion effects
+- **React + custom hooks physics engine using Matter.js** - used for pig bounce simulation and collision handling
+
+### Backend
+
+- **Node.js + Express** – API and game rules validation
+- **MongoDB Atlas** – persistent user balances and game history
+- **JWT Authentication** – secure login and session control
+
+These tools were used to learn and practice full-stack app development.
 
 ---
 
-## Author
+## Setup (Simple)
 
-**Luke Thompson**  
-Red Deer Polytechnic – Computer Programming Diploma
+> Requires Node.js installed on your computer
+
+```bash
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
+
+# Run backend
+cd backend
+npm start
+
+# Run frontend in a new terminal
+cd frontend
+npm run dev
+```

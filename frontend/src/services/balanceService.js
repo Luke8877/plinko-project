@@ -1,21 +1,29 @@
 /**
  * Balance Service
  * --------------------------------------------------
- * Handles all wallet-related API calls:
+ * Wallet-related API handlers:
  * - Fetch balance
- * - Sync updated balance (bets, payouts)
- * - Add funds to wallet
+ * - Persist updated balance after bets/payouts
+ * - Add funds (manual user action)
  */
 
 import api from './api';
 
-// Get current balance from backend (refresh safe)
+/**
+ * GET /game/balance
+ * Fetch current user balance
+ */
 export const fetchBalance = () => api.get('/game/balance');
 
-// Sync updated balance after each state change
+/**
+ * PATCH /game/balance
+ * Update balance after gameplay changes
+ */
 export const updateBalance = (balance) =>
-  api.put('/game/balance', { balance });
+  api.patch('/game/balance', { balance });
 
-// Add funds via user action (modal)
-export const addFunds = (amount) =>
-  api.post('/game/balance/add', { amount });
+/**
+ * POST /game/balance/add
+ * Add funds to player's wallet
+ */
+export const addFunds = (amount) => api.post('/game/balance/add', { amount });

@@ -1,19 +1,23 @@
 /**
- * SVG pig mascot used as the falling "ball" in the PlinkOink game.
+ * PigMascot Component
+ * ------------------------------------------------------------------
+ * SVG mascot used as the falling "ball" in PlinkOink physics gameplay.
+ * Also reused as decorative UI artwork in Dashboard and Login pages.
  *
  * Props:
- * @param {number} size - Width of the pig in pixels (height scales to preserve original aspect ratio)
- * @param {string} className - Optional additional Tailwind/CSS classes
- * @param {object} style - Inline style overrides (used for physics positioning)
+ * @param {number} size      - Width in pixels. Height auto-scales to preserve aspect ratio.
+ * @param {string} className - Optional extra Tailwind utility classes
+ * @param {object} style     - Inline style overrides (used for physics positioning)
  *
  * Notes:
- * - Pointer events disabled so physics interactions are unaffected
+ * - Pointer events should remain disabled when used for physics rendering
+ * - This component is purely visual and does not handle user input
  */
 export default function PigMascot({ size = 60, className = '', style = {} }) {
   return (
     <svg
       width={size}
-      height={(size * 113) / 154}
+      height={(size * 113) / 154} // Maintain original ratio (154 × 113)
       viewBox="0 0 154 113"
       xmlns="http://www.w3.org/2000/svg"
       className={className}

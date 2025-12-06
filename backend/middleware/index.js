@@ -8,3 +8,5 @@
  */
 
 export * from './authMiddleware.js'; // Protects routes with JWT authentication
+
+// TODO: Add rate limiting, input validation, and error handlers here later

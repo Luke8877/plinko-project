@@ -7,6 +7,10 @@
  * - Calculating payouts when pigs land in slots
  * - Passing scoring events + multipliers to UI
  * - Rendering board + betting UI layout
+ *
+ * Security Note:
+ * Visual win events never directly modify backend balance.
+ * All payouts are server-validated to prevent manipulation.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -85,7 +89,8 @@ export default function GamePage() {
    * Single drop (manual play)
    */
   const handleManualDrop = () => {
-    if (!boardRef.current || Number(balanceRef.current) < Number(totalBet)) return;
+    if (!boardRef.current || Number(balanceRef.current) < Number(totalBet))
+      return;
 
     setBalance((prev) => Number(prev) - Number(totalBet));
     boardRef.current.dropBatch?.(pigCount);
@@ -158,7 +163,9 @@ export default function GamePage() {
       {/* Title */}
       <div className="flex items-center justify-center gap-3 mb-4 select-none">
         <PigMascot size={48} className="drop-shadow-[0_0_6px_#ff2fb4]" />
-        <h1 className="text-4xl font-bold text-brandPink tracking-wide">PlinkOink</h1>
+        <h1 className="text-4xl font-bold text-brandPink tracking-wide">
+          PlinkOink
+        </h1>
         <PigMascot size={48} className="drop-shadow-[0_0_6px_#ff2fb4]" />
       </div>
 

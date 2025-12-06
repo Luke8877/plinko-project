@@ -1,19 +1,32 @@
 /**
- * Displays current bankroll + Add Funds button.
+ * BetHeader Component
+ * ---------------------------------------------------------
+ * Displays the player's current balance above the betting panel.
+ * Also includes an optional action to add funds, enabling quick
+ * economy recovery during gameplay testing.
+ *
+ * Behavior:
+ * • Shows currency formatted to 2 decimals when available
+ * • Gracefully displays placeholder (...) while loading balance
+ * • Conditionally renders "Add Funds" button only if callback is provided
+ *
+ * Parent: GamePage — controls actual balance update logic
  */
+
 export default function BetHeader({ balance, onAddFunds }) {
+  // Format balance safely when data is not yet loaded
   const safeBalance =
     balance !== null && balance !== undefined ? balance.toFixed(2) : '...';
 
   return (
     <div className="text-xs text-slate-300 mb-4">
-      {/* Balance */}
+      {/* Visible balance display */}
       <span>
         Balance:{' '}
         <span className="text-emerald-300 font-semibold">${safeBalance}</span>
       </span>
 
-      {/* Add Funds Button under Balance */}
+      {/* Optional "Add Funds" call-to-action */}
       {onAddFunds && (
         <div className="mt-1">
           <button

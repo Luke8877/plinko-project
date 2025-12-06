@@ -9,16 +9,24 @@
 @tailwind utilities;
 
 /**
- * Global Style Overrides
+ * Global Theme
  * --------------------------------------------------
- * Define root UI theme for the app.
- * Dark background + light text creates an
- * arcade-style look that fits PlinkOink branding.
+ * Sets dark arcade-style background and readable text.
+ * Tailwind classes applied directly for consistency.
  */
 body {
   @apply bg-surfaceDark text-slate-200;
 }
 
+/**
+ * Payout Popup Animation
+ * --------------------------------------------------
+ * Used by GameBoard to float win numbers upward
+ * before removing from UI state.
+ *
+ * NOTE: Could disable animation if user has
+ * prefers-reduced-motion enabled.
+ */
 .popup {
   position: absolute;
   pointer-events: none;

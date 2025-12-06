@@ -1,3 +1,21 @@
+/**
+ * BaseCard Component
+ * ---------------------------------------------------------
+ * Reusable card container that standardizes dashboard
+ * visual styling and layout spacing throughout the app.
+ *
+ * Responsibilities:
+ * • Provide consistent card-like appearance (rounded corners,
+ *   brand glow, background tone, spacing)
+ * • Accept custom styling overrides via className
+ * • Wrap arbitrary child content passed from parent components
+ *
+ * Usage:
+ * <BaseCard className="custom-grid-position">
+ *   <SomeContent />
+ * </BaseCard>
+ */
+
 export default function BaseCard({ children, className = '' }) {
   return (
     <div
@@ -12,6 +30,7 @@ export default function BaseCard({ children, className = '' }) {
         ${className}
       `}
     >
+      {/* Render injected content from parent */}
       {children}
     </div>
   );

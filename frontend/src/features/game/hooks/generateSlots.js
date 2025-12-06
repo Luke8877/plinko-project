@@ -1,31 +1,44 @@
 import Matter from 'matter-js';
 
 /**
- * Creates the invisible sensor bars that detect when pigs reach the bottom.
+ * generateSlots
+ * ---------------------------------------------------------
+ * Creates a row of invisible collision sensors representing
+ * the final scoring targets at the bottom of the Plinko board.
  *
- * Slot Rules:
- * - One slot for each lowest row "gap" created by the pegs
- * - Each slot is a thin horizontal sensor instead of a solid platform
- * - Positioned near the bottom with slight offset to keep pigs visible on impact
+ * Game Design Intent:
+ * • Slot count expands as peg rows increase (more routes = more outcomes)
+ * • Pigs remain visible upon slot hit (sensors placed slightly above floor)
+ * • Sensors do not alter physics — only detect scoring events
  *
- * @param {number} width         - Board width in pixels
- * @param {number} height        - Board height in pixels
- * @param {number} topPegCount   - Pegs in the top-most row (drives slot count)
- * @param {number} rows          - Total peg rows in the pyramid
+ * Sensor Placement Strategy:
+ * • Divide board width evenly → each slot is fair + reachable
+ * • Keep sensors narrow to avoid multi-slot overlaps
+ *
+ * Outputs:
+ * • Array of sensor bodies to be added to the Matter.js world
+ * • Slot count for multiplier assignment + score logic
+ *
+ * @param {number} width        - Game board width
+ * @param {number} height       - Game board height
+ * @param {number} topPegCount  - Pegs in first row → base for slot count
+ * @param {number} rows         - Total peg rows → increases slot count
  * @returns {{
  *   slotBodies: Matter.Body[],
  *   slotCount: number
  * }}
  */
+
 export function generateSlots(width, height, topPegCount, rows) {
   const { Bodies } = Matter;
 
+  // Final slot count = expanded width of peg pyramid
   const slotCount = topPegCount + rows;
   const slotWidth = width / slotCount;
 
   /**
-   * Slot bar is placed ~8 percent above the actual bottom
-   * so impacts and popup text remain visibly above the screen edge.
+   * Place sensors slightly above screen bottom:
+   * Prevents pigs from fully disappearing before score register.
    */
   const floorY = height * 0.92;
 
@@ -36,7 +49,7 @@ export function generateSlots(width, height, topPegCount, rows) {
 
     const slot = Bodies.rectangle(x, floorY, slotWidth * 0.9, 6, {
       isStatic: true,
-      isSensor: true, // detects pigs without affecting physics
+      isSensor: true, // collision events only → no visual bounce
       label: `slot-${i}`,
     });
 

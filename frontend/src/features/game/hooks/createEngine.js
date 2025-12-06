@@ -1,30 +1,42 @@
 import Matter from 'matter-js';
 
 /**
- * Creates and configures a Matter.js physics engine for the Plinko board.
+ * createEngine
+ * ---------------------------------------------------------
+ * Initializes a Matter.js physics engine configured
+ * specifically for PlinkOink gameplay:
  *
- * Responsibilities:
- * - Set gravity for downward ball movement
- * - Add static world boundaries (floor + side walls)
- * - Return engine instance for further world composition (pegs, slots, pigs)
+ * Physics Intent:
+ * • Simulates satisfying downward acceleration (gravity)
+ * • Prevents pigs from escaping the visible board
+ * • Ensures pigs visually settle on-screen at the bottom
  *
- * @param {number} width  - Visible game board width in pixels
- * @param {number} height - Visible game board height in pixels
- * @returns {Matter.Engine} Initialized Matter.js engine
+ * Edge Handling:
+ * • Invisible left + right walls sit slightly offscreen
+ *   to avoid awkward clipping against visible boundaries
+ *
+ * Composition Strategy:
+ * • Core engine exported cleanly so pegs, pigs, and slots
+ *   can be added modularly in custom hooks
+ *
+ * @param {number} width  - Game board width in pixels
+ * @param {number} height - Game board height in pixels
+ * @returns {Matter.Engine} Configured physics engine instance
  */
+
 export function createEngine(width, height) {
   const engine = Matter.Engine.create();
   const world = engine.world;
 
-  // Moderate gravity gives satisfying acceleration for pigs
+  // Gravity tuned for smooth bounces and believable acceleration
   engine.gravity.y = 1.0;
 
   const { Bodies, World } = Matter;
 
-  // Extra width beyond screen keeps physics stable against edge clipping
+  // Walls extend beyond viewport → avoids visible clipping
   const wallThickness = 50;
 
-  // Slightly below the visible bottom → balls appear to settle naturally onscreen
+  // Floor slightly below view → pigs settle naturally at slot level
   const floor = Bodies.rectangle(
     width / 2,
     height + wallThickness / 2,
@@ -33,7 +45,7 @@ export function createEngine(width, height) {
     { isStatic: true }
   );
 
-  // Left / right boundaries prevent balls from escaping lateral edges
+  // Side boundaries ensure lateral containment
   const leftWall = Bodies.rectangle(
     -wallThickness / 2,
     height / 2,
@@ -50,7 +62,7 @@ export function createEngine(width, height) {
     { isStatic: true }
   );
 
-  // Single batch add is more performant than multiple adds
+  // Batch world add = cleaner + more performant
   World.add(world, [floor, leftWall, rightWall]);
 
   return engine;

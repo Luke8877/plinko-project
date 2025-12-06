@@ -1,3 +1,20 @@
+/**
+ * GamePreview Component
+ * ---------------------------------------------------------
+ * Dashboard entry point into the PlinkOink gameplay.
+ * Uses floating/animated pigs to visually hint at the
+ * Plinko mechanics while staying lightweight on performance.
+ *
+ * Responsibilities:
+ * • Provide animated game teaser using framer-motion
+ * • Offer a clear CTA button to navigate into /game
+ * • Maintain clean card layout using BaseCard wrapper
+ *
+ * Notes:
+ * • Animation is purely cosmetic — no game physics here
+ * • Pigs spawn at random X offsets to keep visuals varied
+ */
+
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
@@ -7,9 +24,9 @@ import PigMascot from '@shared/components/PigMascot';
 const PIG_COUNT = 9;
 const FALL_DURATION = 5;
 
-// Generate 5 random X positions spread across card width
+// Random X offsets to distribute falling pigs across card space
 const positions = Array.from({ length: PIG_COUNT }).map(
-  () => Math.random() * 700 - 350 // -350px to +350px from center
+  () => Math.random() * 700 - 350 // Range: -350px to +350px from center
 );
 
 export default function GamePreview() {
@@ -17,9 +34,9 @@ export default function GamePreview() {
 
   return (
     <BaseCard className="row-start-2 col-start-1 col-span-2 relative overflow-hidden">
-      {/* Falling pig animations */}
+      {/* Falling pig animations (infinite looping motion) */}
       {positions.map((posX, i) => {
-        const rotateSpeed = Math.random() > 0.5 ? 360 : -360;
+        const rotateSpeed = Math.random() > 0.5 ? 360 : -360; // Random spin direction
 
         return (
           <motion.div
@@ -31,7 +48,7 @@ export default function GamePreview() {
               duration: FALL_DURATION,
               repeat: Infinity,
               ease: 'linear',
-              delay: i * 0.6,
+              delay: i * 0.6, // Staggered falling
             }}
           >
             <PigMascot size={55} />
@@ -39,7 +56,7 @@ export default function GamePreview() {
         );
       })}
 
-      {/* Center button */}
+      {/* Center CTA button to start gameplay */}
       <button
         onClick={() => navigate('/game')}
         className="
@@ -58,6 +75,7 @@ export default function GamePreview() {
         Play Game
       </button>
 
+      {/* Logo flavor text */}
       <p className="absolute bottom-4 right-4 text-brandPink font-bold text-lg">
         PlinkOink
       </p>

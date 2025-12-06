@@ -1,16 +1,20 @@
 /**
  * App Router
- * --------------------------------------------------
- * Defines all major views and access levels for the app.
+ * ---------------------------------------------------------
+ * Defines the navigation structure and access rules for the
+ * PlinkOink frontend. All protected routes require valid JWT
+ * authentication, enforced by the ProtectedRoute wrapper.
  *
  * Public Route:
- *   /login      - Authentication screen (login/register)
+ * • /login      - Authentication screen (login/register)
  *
- * Protected Routes (require JWT token):
- *   /dashboard  - User balance, leaderboard preview, game entry (MVP)
+ * Protected Routes:
+ * • /dashboard  - User dashboard: balance, leaderboard, quick stats
+ * • /game       - PlinkOink gameplay experience (core MVP feature)
+ * • /stats      - Detailed statistics + session history (future)
  *
- * Default:
- *   Root path (/) redirects to login unless authenticated
+ * Default Rule:
+ * • Root path (/) redirects to /login unless authenticated
  */
 
 import {
@@ -30,10 +34,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public authentication route */}
+        {/* Public Authentication Route */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected authenticated dashboard */}
+        {/* Protected Dashboard Route */}
         <Route
           path="/dashboard"
           element={
@@ -43,7 +47,7 @@ function App() {
           }
         />
 
-        {/* Game page */}
+        {/* Protected Game Route */}
         <Route
           path="/game"
           element={
@@ -53,7 +57,7 @@ function App() {
           }
         />
 
-        {/* Stats page */}
+        {/* Protected Stats Route */}
         <Route
           path="/stats"
           element={
@@ -63,7 +67,7 @@ function App() {
           }
         />
 
-        {/* Default redirect */}
+        {/* Default Redirect Behavior */}
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
